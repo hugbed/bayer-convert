@@ -12,33 +12,6 @@ using namespace std;
 using namespace cv;
 namespace fs = std::experimental::filesystem::v1;
 
-/// perform the Simplest Color Balancing algorithm
-void SimplestCB(Mat& in, Mat& out, float percent) {
-  assert(in.channels() == 3);
-  assert(percent > 0 && percent < 100);
-
-  float half_percent = percent / 200.0f;
-
-  vector<Mat> tmpsplit; split(in,tmpsplit);
-  for(int i=0;i<3;i++) {
-    //find the low and high precentile values (based on the input percentile)
-    Mat flat; tmpsplit[i].reshape(1,1).copyTo(flat);
-    cv::sort(flat,flat,CV_SORT_EVERY_ROW + CV_SORT_ASCENDING);
-    int lowval = flat.at<uchar>(cvFloor(((float)flat.cols) * half_percent));
-    int highval = flat.at<uchar>(cvCeil(((float)flat.cols) * (1.0 - half_percent)));
-//    cout << lowval << " " << highval << endl;
-
-    //saturate below the low percentile and above the high percentile
-    tmpsplit[i].setTo(lowval,tmpsplit[i] < lowval);
-    tmpsplit[i].setTo(highval,tmpsplit[i] > highval);
-
-    //scale the channel
-    normalize(tmpsplit[i],tmpsplit[i],0,255,NORM_MINMAX);
-  }
-  merge(tmpsplit,out);
-}
-
-
 template <class OIt, typename Size_t>
 bool read_n_bytes(std::istream& stream, Size_t n, OIt it) {
   if (stream.peek() == EOF || n == 0) {
@@ -91,11 +64,6 @@ void transcodeImages(std::vector<std::string> fileNames,
 
     cv::cvtColor(bayerSource, rgb16Dest, CV_BayerGB2RGB_EA);
     rgb16Dest.convertTo(rgb8Dest, CV_8UC3, 1.0 / 255.0);
-//    cv::imshow("before", rgb8Dest);
-//
-//    SimplestCB(rgb8Dest, rgb8Dest, 30.0f);
-//    cv::imshow("after", rgb8Dest);
-//    cv::waitKey();
 
     // use ffmpeg to reconstruct video from images
     // ffmpeg -r 24 -f image2 -s 2048x1080 -i %04d.tif -vcodec libx264 -crf 25 -pix_fmt rgb24 outputfile.mp4
@@ -103,10 +71,20 @@ void transcodeImages(std::vector<std::string> fileNames,
   }
 }
 
+#include <QApplication>
+
+#include "ui/mainwindow.h"
+
 // example usage:
 // ./bayerconvert 2048 1080 /media/data/Dataset/Legault/elections_1/right /media/data/Dataset/Legault/elections_1/right_rgb ../right_rgb.mp4
 int main (int argc, char* argv[])
 {
+  QApplication app(argc, argv);
+  MainWindow mainWindow;
+  mainWindow.show();
+  app.exec();
+  return 0;
+
   if (argc < 4)
   {
     cerr << "Usage : " << argv[0] << " width heigth [raw files directory] outputfilename " << endl;
