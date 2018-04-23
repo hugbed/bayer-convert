@@ -63,15 +63,15 @@ void MainWindow::startConversion() {
 // static
 QList<QString> MainWindow::filesInFolder(const QString& directoryPath) {
   QList<QString> fileNames;
-  for (QString entry : QDir(directoryPath).entryList(QDir::Files)) {
-      fileNames.push_back(directoryPath + "/" + entry);
+  for (const QString& entry : QDir(directoryPath).entryList(QDir::Files)) {
+    fileNames.push_back(directoryPath + "/" + entry);
   }
   return fileNames;
 }
 
 void MainWindow::openFileDialog(QLineEdit* destinationLineEdit) {
     QFileDialog fileDialog;
-    QString dir = fileDialog.getExistingDirectory(
+    QString dir = QFileDialog::getExistingDirectory(
       this,
       tr("Open Directory"),
       lastPath_ + "/..",

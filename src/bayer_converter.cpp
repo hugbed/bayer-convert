@@ -49,5 +49,5 @@ QList<ImagePath> BayerConverter::subList(const QList<QString> inputList, int fir
 
 void BayerConverter::onImageTranscoded() {
   nbTranscoded_++;
-  emit conversionProgressed(nbTranscoded_+1, inputFilenames_.size());
-};
+  emit conversionProgressed(nbTranscoded_, inputFilenames_.size());
+}
